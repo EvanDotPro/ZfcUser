@@ -179,7 +179,7 @@ class UserBase extends ModelAbstract implements User
      * @param bool $long
      * @return lastIp
      */
-    public function getLastIp($long = false)
+    public function getLastIp($long = true)
     {
         if (true === $long) {
             return $this->lastIp;
@@ -233,7 +233,7 @@ class UserBase extends ModelAbstract implements User
      * @param bool $long
      * @return registerIp
      */
-    public function getRegisterIp($long = false)
+    public function getRegisterIp($long = true)
     {
         if (true === $long) {
             return $this->registerIp;
