@@ -128,7 +128,7 @@ return array(
              */
             'zfcuser_user_mapper' => array(
                 'parameters' => array(
-                    'adapter' => 'zfcuser_db_adapter'
+                    'adapter' => 'zfcuser_db_adapter',
                 )
             ),
              
