@@ -130,7 +130,7 @@ return array(
                 'parameters' => array(
             		'adapter' => 'zfcuser_db_adapter'
             	)
-			),
+            ),
              
              
             'ZfcUser\Model\Mapper\UserZendDb' => array(
