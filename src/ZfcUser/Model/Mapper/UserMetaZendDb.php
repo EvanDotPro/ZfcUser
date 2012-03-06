@@ -25,7 +25,7 @@ class UserMetaZendDb extends DbMapperAbstract implements UserMetaMapper
     public function get($userId, $metaKey)
     {
         $rowset = $this->getTableGateway()->select(array('user_id' => $userId));
-        $row = $rowset->current();
+        $row = $rowset->current()->getArrayCopy();
         $userMetaModelClass = ZfcUser::getOption('usermeta_model_class');
         $userMeta = $userMetaModelClass::fromArray($row);
         $this->events()->trigger(__FUNCTION__ . '.post', $this, array('user' => $userId, 'row' => $row));

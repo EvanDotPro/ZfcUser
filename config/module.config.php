@@ -126,6 +126,13 @@ return array(
             /**
              * Mapper / DB
              */
+            'zfcuser_user_mapper' => array(
+                'parameters' => array(
+                    'adapter' => 'zfcuser_db_adapter',
+                )
+            ),
+             
+             
             'ZfcUser\Model\Mapper\UserZendDb' => array(
                 'parameters' => array(
                     'tableGateway'  => 'zfcuser_user_tg',

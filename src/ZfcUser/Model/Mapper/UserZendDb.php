@@ -32,7 +32,7 @@ class UserZendDb extends DbMapperAbstract implements UserMapper
     public function findByEmail($email)
     {
         $rowset = $this->getTableGateway()->select(array($this->userEmailField => $email));
-        $row = $rowset->current();
+        $row = $rowset->current()->getArrayCopy();
         $userModelClass = ZfcUser::getOption('user_model_class');
         $user = $userModelClass::fromArray($row);
         $this->events()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'row' => $row));
@@ -42,7 +42,7 @@ class UserZendDb extends DbMapperAbstract implements UserMapper
     public function findByUsername($username)
     {
         $rowset = $this->getTableGateway()->select(array($this->userUsernameField => $username));
-        $row = $rowset->current();
+        $row = $rowset->current()->getArrayCopy();
         $userModelClass = ZfcUser::getOption('user_model_class');
         $user = $userModelClass::fromArray($row);
         $this->events()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'row' => $row));
@@ -52,7 +52,7 @@ class UserZendDb extends DbMapperAbstract implements UserMapper
     public function findById($id)
     {
         $rowset = $this->getTableGateway()->select(array($this->userIDField => $id));
-        $row = $rowset->current();
+        $row = $rowset->current()->getArrayCopy();
         $userModelClass = ZfcUser::getOption('user_model_class');
         $user = $userModelClass::fromArray($row);
         $this->events()->trigger(__FUNCTION__ . '.post', $this, array('user' => $user, 'row' => $row));
