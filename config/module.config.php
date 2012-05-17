@@ -14,14 +14,21 @@ return array(
         'sha256_rounds'             => 5000,       // integer between 1000 and 999,999,999
         'sha512_rounds'             => 5000,       // integer between 1000 and 999,999,999
     ),
-    //'controllers' => array(
-    //    'zfcuser' => 'ZfcUser\Controller\UserController'
-    //),
+
+    'view_manager' => array(
+        'template_path_stack' => array(
+            'zfcuser' => __DIR__ . '/../view',
+        ),
+    ),
 
     'controller' => array(
-        // If you want to simply seed the plugin broker's plugin class locator
+        // We _could_ use a factory to create the controller
+        // 'factories' => array(
+        //     'zfcuser' => 'ZfcUser\Service\ControllerFactory',
+        // ),
+        // Below is a plugin map for the controller plugin broker
         'map' => array(
-            'zfcUserAuthentication' => 'ZfcUser\Controller\Plugin\ZfcUserAuthentication',
+            'zfcuserauthentication' => 'ZfcUser\Controller\Plugin\ZfcUserAuthentication',
         ),
     ),
 
