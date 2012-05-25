@@ -18,11 +18,6 @@ class AdapterChain extends EventProvider implements AdapterInterface
     protected $event;
 
     /**
-     * @var ChainableAdapter
-     */
-    protected $defaultAdapter;
-
-    /**
      * Returns the authentication result 
      * 
      * @return AuthenticationResult
@@ -69,19 +64,6 @@ class AdapterChain extends EventProvider implements AdapterInterface
     }
 
     /**
-     * Attach a chainable adapter 
-     * 
-     * @param ChainableAdapter $defaultAdapter 
-     * @return AdapterChain
-     */
-    public function setDefaultAdapter(ChainableAdapter $defaultAdapter)
-    {
-        $this->defaultAdapter = $defaultAdapter;
-        $this->attachDefaultAdapter();
-        return $this;
-    }
-
-    /**
      * Set the event manager instance used by this context
      * 
      * @param  EventManagerInterface $events 
@@ -90,23 +72,7 @@ class AdapterChain extends EventProvider implements AdapterInterface
     public function setEventManager(EventManagerInterface $events)
     {
         $return = parent::setEventManager($events);
-        $this->attachDefaultAdapter();
         return $return;
-    }
-
-    /**
-     * attach 
-     * 
-     * @return AdapterChain
-     */
-    public function attachDefaultAdapter()
-    {
-        //$adapter->getStorage()->clear();
-        if (!$this->defaultAdapter || !$this->events) {
-            return;
-        }
-        $this->events()->attach('authenticate', array($this->defaultAdapter, 'authenticate'));
-        return $this;
     }
 
     /**

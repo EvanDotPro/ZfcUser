@@ -58,9 +58,11 @@ class UserController extends ActionController
         $form    = $this->getLoginForm();
 
         if (!$request->isPost()) {
-            return array(
+            $view = new ViewModel(array(
                 'loginForm' => $form,
-            );
+            ));
+            $view->setTemplate('zfc-user/user/login.phtml');
+            return $view;
         }
 
         $form->setInputFilter(new LoginFilter());
@@ -165,6 +167,9 @@ class UserController extends ActionController
 
     public function getUserService()
     {
+        if (null === $this->userService) {
+            $this->userService = $this->getServiceLocator()->get('zfcuser_user_service');
+        }
         return $this->userService;
     }
 
@@ -176,6 +181,9 @@ class UserController extends ActionController
 
     public function getRegisterForm()
     {
+        if (null === $this->registerForm) {
+            $this->registerForm = $this->getServiceLocator()->get('ZfcUser\Form\Register');
+        }
         return $this->registerForm;
     }
 
@@ -191,6 +199,9 @@ class UserController extends ActionController
 
     public function getLoginForm()
     {
+        if (null === $this->loginForm) {
+            $this->loginForm = $this->getServiceLocator()->get('ZfcUser\Form\Login');
+        }
         return $this->loginForm;
     }
 

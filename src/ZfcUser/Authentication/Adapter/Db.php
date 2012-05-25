@@ -4,22 +4,29 @@ namespace ZfcUser\Authentication\Adapter;
 
 use ZfcUser\Authentication\Adapter\AdapterChainEvent as AuthEvent,
     Zend\Authentication\Result as AuthenticationResult,
+    Zend\ServiceManager\ServiceManagerAwareInterface,
+    Zend\ServiceManager\ServiceManager,
     ZfcUser\Module as ZfcUser,
     ZfcUser\Model\UserMapperInterface,
     ZfcUser\Util\Password,
     DateTime;
 
-class Db extends AbstractAdapter
+class Db extends AbstractAdapter implements ServiceManagerAwareInterface
 {
     /**
      * @var UserMapperInterface
      */
-    protected $mapper;
+    protected $userMapper;
 
     /**
      * @var closure / invokable object
      */
     protected $credentialPreprocessor;
+
+    /**
+     * @var ServiceManager
+     */
+    protected $locator;
 
     public function authenticate(AuthEvent $e)
     {
@@ -35,11 +42,11 @@ class Db extends AbstractAdapter
         $credential = $e->getRequest()->post()->get('credential');
         $credential = $this->preProcessCredential($credential);
         
-        $userObject = $this->getMapper()->findByEmail($identity);
+        $userObject = $this->getUserMapper()->findByEmail($identity);
 
         if (!$userObject && ZfcUser::getOption('enable_username')) {
             // Auth by username
-            $userObject = $this->getMapper()->findByUsername($identity);
+            $userObject = $this->getUserMapper()->findByUsername($identity);
         }
         if (!$userObject) {
             $e->setCode(AuthenticationResult::FAILURE_IDENTITY_NOT_FOUND)
@@ -70,28 +77,6 @@ class Db extends AbstractAdapter
           ->setMessages(array('Authentication successful.'));
     }
 
-    /**
-     * getMapper 
-     * 
-     * @return UserMapperInterface
-     */
-    public function getMapper()
-    {
-        return $this->mapper;
-    }
-
-    /**
-     * setMapper 
-     * 
-     * @param UserMapperInterface $mapper 
-     * @return Db
-     */
-    public function setMapper(UserMapperInterface $mapper)
-    {
-        $this->mapper = $mapper;
-        return $this;
-    }
-
     protected function updateUserPasswordHash($userObject, $password)
     {
         $newHash = Password::hash($password);
@@ -99,7 +84,7 @@ class Db extends AbstractAdapter
 
         $userObject->setPassword($newHash);
 
-        $this->getMapper()->persist($userObject);
+        $this->getUserMapper()->persist($userObject);
         return $this;
     }
 
@@ -108,7 +93,7 @@ class Db extends AbstractAdapter
         $userObject->setLastLogin(new DateTime('now'))
                    ->setLastIp($_SERVER['REMOTE_ADDR']);
 
-        $this->getMapper()->persist($userObject);
+        $this->getUserMapper()->persist($userObject);
         return $this;
     }
 
@@ -140,5 +125,51 @@ class Db extends AbstractAdapter
     {
         $this->credentialPreprocessor = $credentialPreprocessor;
         return $this;
+    }
+
+    /**
+     * getUserMapper 
+     * 
+     * @return UserMapperInterface
+     */
+    public function getUserMapper()
+    {
+        if (null === $this->userMapper) {
+            $this->userMapper = $this->getServiceManager()->get('zfcuser_user_mapper');
+        }
+        return $this->userMapper;
+    }
+
+    /**
+     * setUserMapper
+     *
+     * @param UserMapperInterface $userMapper
+     * @return User
+     */
+    public function setUserMapper(UserMapperInterface $userMapper)
+    {
+        $this->userMapper = $userMapper;
+        return $this;
+    }
+
+    /**
+     * Retrieve locator instance
+     *
+     * @return ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->locator;
+    }
+
+    /**
+     * Set locator instance
+     *
+     * @param  ServiceManager $locator
+     * @return void
+     */
+    public function setServiceManager(ServiceManager $locator)
+    {
+        $this->locator = $locator;
     }
 }

@@ -5,6 +5,8 @@ namespace ZfcUser\Service;
 use Zend\Authentication\AuthenticationService,
     Zend\Form\Form,
     Zend\EventManager\ListenerAggregate,
+    Zend\ServiceManager\ServiceManagerAwareInterface,
+    Zend\ServiceManager\ServiceManager,
     DateTime,
     ZfcUser\Util\Password,
     ZfcUser\Model\UserMapperInterface,
@@ -12,7 +14,7 @@ use Zend\Authentication\AuthenticationService,
     ZfcUser\Module as ZfcUser,
     ZfcBase\EventManager\EventProvider;
 
-class User extends EventProvider
+class User extends EventProvider implements ServiceManagerAwareInterface
 {
     /**
      * @var UserMapperInterface
@@ -25,31 +27,31 @@ class User extends EventProvider
     protected $userMetaMapper;
 
     /**
-     * @var mixed
-     */
-    protected $resolvedIdentity;
-
-    /**
      * @var authService
      */
     protected $authService;
 
+    /**
+     * @var ServiceManager
+     */
+    protected $locator;
+
     public function updateMeta($key, $value)
     {
         $user = $this->getAuthService()->getIdentity();
-        if (!$userMeta = $this->userMetaMapper->get($user->getUserId(), $key)) {
+        if (!$userMeta = $this->getUserMetaMapper()->get($user->getUserId(), $key)) {
             $class = ZfcUser::getOption('usermeta_model_class');
             $userMeta = new $class;
             $userMeta->setUser($user);
             $userMeta->setMetaKey($key);
             $userMeta->setMeta($value);
-            $this->userMetaMapper->add($userMeta);
+            $this->getUserMetaMapper()->add($userMeta);
         }
         if (!$userMeta->getUser()) {
             $userMeta->setUser($user);
         }
         $userMeta->setMeta($value);
-        $this->userMetaMapper->update($userMeta);
+        $this->getUserMetaMapper()->update($userMeta);
     }
 
     /**
@@ -82,7 +84,7 @@ class User extends EventProvider
             $user->setDisplayName($data['display_name']);
         }
         $this->events()->trigger(__FUNCTION__, $this, array('user' => $user, 'form' => $form));
-        $this->userMapper->persist($user);
+        $this->getUserMapper()->persist($user);
         return $user;
     }
 
@@ -94,7 +96,20 @@ class User extends EventProvider
      */
     public function getByUsername($username)
     {
-        return $this->userMapper->findByUsername($username);
+        return $this->getUserMapper()->findByUsername($username);
+    }
+
+    /**
+     * getUserMapper 
+     * 
+     * @return UserMapperInterface
+     */
+    public function getUserMapper()
+    {
+        if (null === $this->userMapper) {
+            $this->userMapper = $this->getServiceManager()->get('zfcuser_user_mapper');
+        }
+        return $this->userMapper;
     }
 
     /**
@@ -107,6 +122,19 @@ class User extends EventProvider
     {
         $this->userMapper = $userMapper;
         return $this;
+    }
+
+    /**
+     * getUserMetaMapper 
+     * 
+     * @return UserMetaMapperInterface
+     */
+    public function getUserMetaMapper()
+    {
+        if (null === $this->userMetaMapper) {
+            $this->userMetaMapper = $this->getServiceManager()->get('zfcuser_usermeta_mapper');
+        }
+        return $this->userMetaMapper;
     }
 
     /**
@@ -129,7 +157,7 @@ class User extends EventProvider
     public function getAuthService()
     {
         if (null === $this->authService) {
-            $this->authService = new AuthenticationService;
+            $this->authService = $this->getServiceManager()->get('zfcuser_auth_service');
         }
         return $this->authService;
     }
@@ -144,5 +172,26 @@ class User extends EventProvider
     {
         $this->authService = $authService;
         return $this;
+    }
+
+    /**
+     * Retrieve locator instance
+     *
+     * @return ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->locator;
+    }
+
+    /**
+     * Set locator instance
+     *
+     * @param  ServiceManager $locator
+     * @return void
+     */
+    public function setServiceManager(ServiceManager $locator)
+    {
+        $this->locator = $locator;
     }
 }

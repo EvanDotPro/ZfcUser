@@ -3,9 +3,11 @@
 namespace ZfcUser\Authentication\Storage;
 
 use Zend\Authentication\Storage,
+    Zend\ServiceManager\ServiceManagerAwareInterface,
+    Zend\ServiceManager\ServiceManager,
     ZfcUser\Model\UserMapperInterface;
 
-class Db implements Storage\StorageInterface
+class Db implements Storage\StorageInterface, ServiceManagerAwareInterface
 {
     /**
      * @var Storage
@@ -13,14 +15,19 @@ class Db implements Storage\StorageInterface
     protected $storage;
 
     /**
-     * @var UserMapper
+     * @var UserMapperInterface
      */
-    protected $mapper;
+    protected $userMapper;
 
     /**
      * @var mixed
      */
     protected $resolvedIdentity;
+
+    /**
+     * @var ServiceManager
+     */
+    protected $locator;
 
     /**
      * Returns true if and only if storage is empty
@@ -50,7 +57,7 @@ class Db implements Storage\StorageInterface
         $identity = $this->getStorage()->read();
 
         if (is_int($identity) || is_scalar($identity)) {
-            $identity = $this->getMapper()->findById($identity);
+            $identity = $this->getUserMapper()->findById($identity);
         }
 
         if ($identity) {
@@ -114,24 +121,48 @@ class Db implements Storage\StorageInterface
     }
 
     /**
-     * getMapper 
+     * getUserMapper 
      * 
-     * @return UserMapper
+     * @return UserMapperInterface
      */
-    public function getMapper()
+    public function getUserMapper()
     {
-        return $this->mapper;
+        if (null === $this->userMapper) {
+            $this->userMapper = $this->getServiceManager()->get('zfcuser_user_mapper');
+        }
+        return $this->userMapper;
     }
 
     /**
-     * setMapper 
-     * 
-     * @param UserMapperInterface $mapper 
-     * @return Db
+     * setUserMapper
+     *
+     * @param UserMapperInterface $userMapper
+     * @return User
      */
-    public function setMapper(UserMapperInterface $mapper)
+    public function setUserMapper(UserMapperInterface $userMapper)
     {
-        $this->mapper = $mapper;
+        $this->userMapper = $userMapper;
         return $this;
+    }
+
+    /**
+     * Retrieve locator instance
+     *
+     * @return ServiceManager
+     */
+    public function getServiceManager()
+    {
+        return $this->locator;
+    }
+
+    /**
+     * Set locator instance
+     *
+     * @param  ServiceManager $locator
+     * @return void
+     */
+    public function setServiceManager(ServiceManager $locator)
+    {
+        $this->locator = $locator;
     }
 }
