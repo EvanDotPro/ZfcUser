@@ -1,0 +1,22 @@
+<?php
+define('ZF2_PATH', getenv('HOME') . '/workspace/zf2/library');
+
+return array(
+    'modules' => array(
+        'ZfcBase',
+        'ZfcUser',
+    ),
+    'module_listener_options' => array(
+        'extra_config' => array(
+            'service_manager' => array(
+                'factories' => array(
+                    'Zend\Db\Adapter\Adapter' => 'Zend\Db\Adapter\AdapterServiceFactory',
+                ),
+            ),
+            'db' => array(
+                'driver'   => 'pdo',
+                'dsn'      => 'sqlite:' . __DIR__ . '/data/users-test.db',
+            ),
+        ),
+    ),
+);
